@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randomly Ordered Images</title>
+<style>
+    /* Optional: Add some CSS styles for better presentation */
+    .image-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .image-container img {
+        margin: 10px;
+        width: 200px; /* Adjust image width as needed */
+        height: auto;
+    }
+</style>
+</head>
+<body>
+<div class="image-container" id="image-container">
+    <!-- Images will be dynamically added here -->
+</div>
+
+<script>
+// Define an array of image URLs
+//function onefull(array){
+var imageUrls = [
+    'top.png',
+    'bluejeans3.png',
+    'pants.png',
+    'ppp.png'
+
+    // Add more image URLs as needed
+];
+
+// Function to shuffle the array elements (Fisher-Yates shuffle algorithm)
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Shuffle the image URLs array
+shuffleArray(imageUrls);
+
+// Get the image container element
+var imageContainer = document.getElementById('image-container');
+
+// Add images to the container
+imageUrls.forEach(function(imageUrl) {
+    var img = document.createElement('img');
+    img.src = imageUrl;
+    imageContainer.appendChild(img);
+});
+
+
+//document.getElementById('smth').addEventListener('click', onefull);
+</script>
+</body>
+</html>

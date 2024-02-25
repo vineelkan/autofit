@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoFit</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        /* CSS styles for buttons */
+        #imageInput {
+            background-color: #56a9c3;
+            color: #ffffff; /* White text */
+            padding: 14px; /* Padding */
+            padding-left: 0;
+            padding-right: 0;
+            text-align: center; /* Center align text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Display as inline-block */
+            font-family: Verdana;
+            font-size: 14px; /* Font size */
+            margin-top: 2px; /* Margin */
+            margin-left: 100px;
+            cursor: pointer; /* Cursor on hover */
+            border-radius: 10px; /* Rounded corners */
+            border: none; /* No border */
+            padding-left: 100px;
+        }
+
+        #imageInput:hover {
+            background-color: #6cc7ca;
+        }
+        #fetchColorsBtn {
+            background-color: #56a9c3;
+            color: white; /* White text */
+            padding: 15px 32px; /* Padding */
+            text-align: center; /* Center align text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Display as inline-block */
+            font-family: Verdana;
+            font-size: 14px; /* Font size */
+            margin: 2px 1px; /* Margin */
+            cursor: pointer; /* Cursor on hover */
+            border-radius: 10px; /* Rounded corners */
+            border: none; /* No border */
+        }
+
+        #fetchColorsBtn:hover {
+            background-color: 6cc7ca;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="headercolor">
+        <h5>Color Matches for You</h5>
+    </div>
+    <div class="inputandoutput">
+        <h3>Your clothing &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; &numsp; Our recommendations!</h3>
+    </div> 
+    <input type="file" id="imageInput">
+    <button id="fetchColorsBtn">Fetch Colors</button>
+    <button id = "smth" > Find Outfit</button>
+    <button id = "again" smth.reload()> Randomize</button>
+    
+    <div id="colorsResult"></div>
+    <iframe id = "myiframe" hidden = "hidden" src="smth.html" style="width: 100%; height: 500px; border: none;"></iframe>
+    <button onclick="toggle(this);">Hide Iframe</button>
+ 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let toggle = button => {
+        let element = document.getElementById("myiframe");
+        let hidden = element.getAttribute("hidden");
+    
+        if (hidden) {
+            element.removeAttribute("hidden");
+            button.innerText = "Hide Iframe";
+        } else {
+        element.setAttribute("hidden", "hidden");
+        button.innerText = "Show Iframe";
+        }
+        } 
+        async function fetchColors() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select an image.');
+                return;
+            }
+
+            const form = new FormData();
+            form.append('file', file);
+
+            const settings = {
+                method: 'POST',
+                headers: {
+                    'X-RapidAPI-Key': 'a50bce534dmsh331bc0bebbb2e68p125fe0jsnd183c9a815b4',
+                    'X-RapidAPI-Host': 'regim3.p.rapidapi.com'
+                },
+                body: form
+            };
+
+            try {
+                const response = await fetch('https://regim3.p.rapidapi.com/colors/1.1/?opts=colors%2Calg%3D2%2CclosestColors', settings);
+                const data = await response.json();
+                const mainColors = getMainColors(data.data.colors);
+                const complementaryColors = await fetchComplementaryColors(mainColors);
+                displayColors(mainColors, complementaryColors);
+            } catch (error) {
+                console.error('Error fetching colors:', error);
+                alert('Error fetching colors. Please try again.');
+            }
+        }
+
+        function getMainColors(colors) {
+            if (!colors || colors.length === 0) {
+                return null;
+            }
+            return colors.slice(0, 3);
+        }
+
+        async function fetchComplementaryColors(mainColors) {
+            const complementaryColors = [];
+            for (const color of mainColors) {
+                const colorWithoutHash = color.replace('#', ''); // Remove the hashtag from the color hex code
+                try {
+                    const response = await fetch(`https://www.thecolorapi.com/scheme?hex=${colorWithoutHash}&mode=complement&count=1&format=json`);
+                    const data = await response.json();
+                    if (data && data.colors && data.colors.length > 0 && data.colors[0].hex && data.colors[0].hex.value) {
+                        complementaryColors.push(data.colors[0].hex.value);
+                    } else {
+                        complementaryColors.push(null); // Push null if complementary color data is not available
+                    }
+                } catch (error) {
+                    console.error('Error fetching complementary color for', color, ':', error);
+                    complementaryColors.push(null); // Push null if there is an error fetching the complementary color
+                }
+            }
+            return complementaryColors;
+        }
+
+        
+
+        function displayColors(mainColors, complementaryColors) {
+            const colorsResult = document.getElementById('colorsResult');
+            colorsResult.innerHTML = '';
+
+            const mainColorsList = document.createElement('ul');
+            mainColors.forEach((color, index) => {
+                const boxes = document.createElement("div")
+                boxes.setAttribute('class', 'box');
+                const colorListItem = document.createElement('li');
+                colorListItem.textContent = '';
+                boxes.style.backgroundColor = color;
+                //colorListItem.innerHTML("hi");
+                mainColorsList.appendChild(boxes);
+
+                if (complementaryColors[index]) {
+                    const boxess = document.createElement("div")
+                    boxess.setAttribute('class', 'boxx');
+                    const complementaryListItem = document.createElement('li');
+                    complementaryListItem.textContent = '';
+                    boxess.style.backgroundColor = complementaryColors[index];
+                    mainColorsList.appendChild(boxess);
+                }
+            });
+
+            colorsResult.appendChild(mainColorsList);
+        }
+
+        document.getElementById('fetchColorsBtn').addEventListener('click', fetchColors);
+    </script>
+</body>
+</html>
